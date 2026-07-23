@@ -18,26 +18,23 @@ function Footer() {
             AI-powered fact verification platform
             helping you discover reliable information.
           </p>
-
         </div>
 
 
         <div className="footer-links">
 
           <div>
-            <h3>
-              Platform
-            </h3>
+            <h3>Platform</h3>
 
-            <Link href="/">
+            <Link to="/">
               Fact Check
             </Link>
 
-            <Link href="/history">
+            <Link to="/history">
               History
             </Link>
 
-            <Link href="/dashboard">
+            <Link to="/dashboard">
               Dashboard
             </Link>
 
@@ -45,24 +42,25 @@ function Footer() {
 
 
           <div>
-            <h3>
-              Resources
-            </h3>
+            <h3>Resources</h3>
 
-            <Link href="#">
+            <Link to="/about">
               About
             </Link>
 
-            <Link href="#">
+            <Link to="/">
               Home
             </Link>
 
-            <Link href="https://prateek-dhar-dwivedi.github.io/-Portfolio/">
+            <a 
+              href="https://prateek-dhar-dwivedi.github.io/-Portfolio/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Contact
-            </Link>
+            </a>
 
           </div>
-
 
         </div>
 
@@ -78,7 +76,6 @@ function Footer() {
 
     </footer>
   );
-
 }
 
 export default Footer;
