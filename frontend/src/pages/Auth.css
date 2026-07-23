@@ -1,0 +1,46 @@
+.auth-switch{
+  text-align:center;
+  margin-top:20px;
+  color:#64748B;
+  font-size:15px;
+}
+
+
+.auth-switch button{
+
+  background:none;
+
+  border:none;
+
+  color:#0F766E;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  margin-left:5px;
+
+  font-size:15px;
+
+  transition:.3s;
+}
+
+
+.auth-switch button:hover{
+
+  color:#14B8A6;
+
+  text-decoration:underline;
+}
+
+body.dark .auth-switch{
+color:#94A3B8;
+}
+
+body.dark .auth-switch button{
+color:#5EEAD4;
+}
+
+body.dark .auth-switch button:hover{
+color:#99F6E4;
+}

@@ -1,0 +1,87 @@
+body {
+  background: #ffffff;
+  color: #111827;
+  transition: 0.3s;
+}
+
+/* 
+body.dark {
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+
+.dark .card {
+  background: #1e293b;
+  color: white;
+}
+
+
+.dark .navbar {
+  background: #020617 !important;
+}
+
+
+.dark input {
+  background: #1e293b;
+  color: white;
+  border-color: #334155;
+}
+
+
+.dark button {
+  background: #2563eb;
+} */
+
+/* {New Chnages} */
+body.dark-theme{
+    background:red !important;
+}
+
+body.dark-theme{
+    background:#0F172A;
+    color:#E2E8F0;
+}
+
+body.dark-theme .card,
+body.dark-theme .result-card,
+body.dark-theme .source-card,
+body.dark-theme .saved-login-card{
+    background:#1E293B;
+    border:1px solid #334155;
+    color:#E2E8F0;
+}
+
+body.dark-theme input,
+body.dark-theme textarea{
+    background:#0F172A;
+    border:1px solid #334155;
+    color:#F8FAFC;
+}
+
+body.dark-theme .navbar{
+    background:#111827;
+    border-bottom:1px solid #334155;
+}
+
+body.dark-theme .navbar a{
+    color:#E2E8F0;
+}
+
+body.dark-theme .navbar a.active{
+    color:#14B8A6;
+}
+
+body.dark-theme footer{
+    background:#111827;
+    color:#CBD5E1;
+}
+
+body.dark-theme .analysis-section{
+    background:#1E293B;
+}
+
+body.dark-theme .source-card{
+    background:#0F172A;
+    border:1px solid #334155;
+}
