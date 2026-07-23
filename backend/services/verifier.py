@@ -1,60 +1,71 @@
 import os
-import requests
+import google.generativeai as genai
+import numpy as np
 
-HF_TOKEN = os.getenv("HF_TOKEN")
 
-API_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2"
+# Gemini API Key
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-HEADERS = {
-    "Authorization": f"Bearer {HF_TOKEN}",
-    "Content-Type": "application/json"
-}
+genai.configure(api_key=GEMINI_API_KEY)
 
 
 def get_embedding(text):
-    response = requests.post(
-        API_URL,
-        headers=HEADERS,
-        json={"inputs": text},
-        timeout=60
+
+    response = genai.embed_content(
+        model="models/text-embedding-004",
+        content=text,
+        task_type="semantic_similarity"
     )
 
-    response.raise_for_status()
+    return response["embedding"]
 
-    return response.json()
 
 
 def cosine_similarity(a, b):
-    dot = sum(x * y for x, y in zip(a, b))
-    norm_a = sum(x * x for x in a) ** 0.5
-    norm_b = sum(y * y for y in b) ** 0.5
+
+    a = np.array(a)
+    b = np.array(b)
+
+    dot = np.dot(a, b)
+
+    norm_a = np.linalg.norm(a)
+    norm_b = np.linalg.norm(b)
 
     if norm_a == 0 or norm_b == 0:
         return 0.0
 
-    return dot / (norm_a * norm_b)
+    return float(dot / (norm_a * norm_b))
+
 
 
 def verify_claim(claim, articles):
 
+    # Generate claim embedding
     claim_embedding = get_embedding(claim)
 
     scores = []
 
+
     for article in articles:
+
         text = (
-            article.get("title", "") +
-            " " +
-            article.get("description", "")
+            article.get("title", "")
+            + " "
+            + article.get("description", "")
         )
 
+
+        # Generate article embedding
         article_embedding = get_embedding(text)
+
 
         similarity = cosine_similarity(
             claim_embedding,
             article_embedding
         )
 
+
         scores.append(float(similarity))
+
 
     return scores
