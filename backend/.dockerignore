@@ -1,17 +1,23 @@
-venv/
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+
+venv/
+.env
 
 .git
 .gitignore
 
-.env
-
-.idea/
 .vscode/
+.idea/
 
 node_modules/
 
 build/
 dist/
+
+.pytest_cache/
+.mypy_cache/
+
+*.log
