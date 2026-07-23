@@ -1,23 +1,24 @@
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+fastapi==0.139.2
+uvicorn[standard]==0.35.0
 
-venv/
-.env
+pymongo==4.17.0
+python-dotenv==1.2.2
 
-.git
-.gitignore
+passlib==1.7.4
+PyJWT==2.13.0
 
-.vscode/
-.idea/
+requests==2.34.2
+beautifulsoup4==4.15.0
+newspaper3k==0.2.8
+trafilatura==2.1.0
 
-node_modules/
+google-generativeai==0.8.6
 
-build/
-dist/
+python-multipart==0.0.20
+email-validator==2.3.0
 
-.pytest_cache/
-.mypy_cache/
-
-*.log
+lxml==6.1.1
+lxml_html_clean==0.4.3
+nltk==3.9.1
+numpy==2.3.2
+tqdm==4.67.1
