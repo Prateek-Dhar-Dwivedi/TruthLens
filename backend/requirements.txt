@@ -1,99 +1,28 @@
-fastapi==0.116.1
-uvicorn==0.35.0
-gunicorn==23.0.0
+fastapi==0.139.2
+uvicorn[standard]==0.35.0
 
-python-dotenv==1.1.1
+pymongo==4.17.0
+python-dotenv==1.2.2
+
+passlib==1.7.4
+PyJWT==2.13.0
+
+requests==2.34.2
+beautifulsoup4==4.15.0
+newspaper3k==0.2.8
+trafilatura==2.1.0
+
+google-generativeai==0.8.6
+
+transformers==4.56.1
+sentence-transformers==5.1.0
+torch==2.8.0
+
 python-multipart==0.0.20
-
-pydantic==2.12.0
 email-validator==2.3.0
 
-# Database
-pymongo==4.13.2
-dnspython==2.7.0
-
-# HTTP
-requests==2.32.4
-httpx==0.28.1
-
-# Web scraping / News
-beautifulsoup4==4.13.4
-newspaper3k==0.2.8
-lxml==6.0.0
-lxml_html_clean==0.4.2
-feedparser==6.0.12
-feedfinder2==0.0.4
-courlan==1.4.0
-trafilatura==2.1.0
-tldextract==5.3.1
-jusText==3.0.2
-cssselect==1.4.0
-
-# NLP
-nltk==3.10.0
-jieba3k==0.35.1
-regex==2026.7.19
-
-# ML (CPU optimized)
-numpy==2.2.6
-scipy==1.18.0
-scikit-learn==1.9.0
-joblib==1.5.3
-threadpoolctl==3.6.0
-
-# CPU ONLY PyTorch
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.2.2+cpu
-
-# Lightweight Transformers
-transformers==4.40.2
-sentence-transformers==2.7.0
-safetensors==0.5.3
-huggingface-hub==0.30.2
-
-# Google Gemini
-google-generativeai==0.8.6
-google-ai-generativelanguage==0.6.15
-google-api-core==2.25.2
-google-api-python-client==2.198.0
-google-auth==2.56.2
-google-auth-httplib2==0.4.0
-googleapis-common-protos==1.75.0
-proto-plus==1.28.2
-protobuf==5.29.6
-grpcio==1.82.1
-grpcio-status==1.71.2
-
-# Utilities
-pillow==12.3.0
-PyYAML==6.0.3
-python-dateutil==2.9.0.post0
-pytz==2026.2
-tzdata==2026.3
-
-# Security
-cryptography==49.0.0
-PyJWT==2.13.0
-passlib==1.7.4
-
-# Async / Server
-anyio==4.14.2
-h11==0.16.0
-starlette==0.47.3
-watchfiles==1.2.0
-websockets==16.1
-
-# Utilities
-filelock==3.32.0
-packaging==26.2
-typing_extensions==4.16.0
-typing-inspection==0.4.2
-urllib3==2.7.0
-
-# CLI
-click==8.4.2
-rich==15.0.0
-typer==0.27.0
-markdown-it-py==4.2.0
-Pygments==2.20.0
-mdurl==0.1.2
+lxml==6.1.1
+lxml_html_clean==0.4.3
+nltk==3.9.1
+numpy==2.3.2
+tqdm==4.67.1
