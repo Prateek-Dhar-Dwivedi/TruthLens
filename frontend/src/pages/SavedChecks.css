@@ -1,0 +1,162 @@
+.saved-login-card {
+    max-width: 600px;
+    margin: 80px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 24px;
+    text-align: center;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 15px 35px rgba(15, 118, 110, .10);
+}
+
+.saved-login-card h1 {
+    margin-bottom: 15px;
+    color: #0F766E;
+}
+
+.saved-login-card p {
+    color: #64748B;
+    font-size: 1.1rem;
+}
+
+.login-required-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 14px 28px;
+    background: #14B8A6;
+    color: white;
+    text-decoration: none;
+    border-radius: 14px;
+    font-weight: 700;
+    transition: .3s;
+}
+
+.login-required-btn:hover {
+    background: #0F766E;
+}
+
+.saved-page{
+padding:50px 60px;
+background:#FAF8F3;
+min-height:calc(100vh - 75px);
+}
+
+.saved-container{
+max-width:1000px;
+margin:auto;
+}
+
+.saved-title{
+font-size:2.5rem;
+font-weight:800;
+margin-bottom:30px;
+background:linear-gradient(90deg,#0F766E,#14B8A6);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.saved-card{
+background:white;
+padding:24px;
+margin-bottom:20px;
+border-radius:20px;
+border:1px solid #E5E7EB;
+box-shadow:0 10px 25px rgba(15,118,110,.08);
+}
+
+.saved-card h3{
+margin-bottom:12px;
+color:#1E293B;
+}
+
+.saved-verdict{
+display:inline-block;
+padding:8px 14px;
+border-radius:999px;
+font-weight:700;
+margin-bottom:12px;
+}
+
+.true{
+background:#DCFCE7;
+color:#15803D;
+}
+
+.false{
+background:#FEE2E2;
+color:#DC2626;
+}
+
+.uncertain{
+background:#FEF3C7;
+color:#B45309;
+}
+
+.saved-confidence{
+color:#64748B;
+font-weight:600;
+}
+
+.empty-state{
+background:white;
+padding:30px;
+border-radius:20px;
+text-align:center;
+border:1px solid #E5E7EB;
+color:#64748B;
+}
+
+/* ================= DARK MODE ================= */
+
+body.dark .saved-page{
+background:#020617;
+}
+
+body.dark .saved-login-card{
+background:#0F172A;
+border:1px solid #334155;
+box-shadow:0 15px 35px rgba(0,0,0,.35);
+}
+
+body.dark .saved-login-card h1{
+color:#5EEAD4;
+}
+
+body.dark .saved-login-card p{
+color:#94A3B8;
+}
+
+body.dark .saved-card{
+background:#0F172A;
+border:1px solid #334155;
+box-shadow:none;
+}
+
+body.dark .saved-card h3{
+color:#F8FAFC;
+}
+
+body.dark .saved-confidence{
+color:#CBD5E1;
+}
+
+body.dark .empty-state{
+background:#0F172A;
+border:1px solid #334155;
+color:#CBD5E1;
+}
+
+body.dark .true{
+background:#14532D;
+color:#BBF7D0;
+}
+
+body.dark .false{
+background:#7F1D1D;
+color:#FECACA;
+}
+
+body.dark .uncertain{
+background:#78350F;
+color:#FDE68A;
+}

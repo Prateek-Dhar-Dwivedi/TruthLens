@@ -1,0 +1,210 @@
+.register-page{
+  min-height:calc(100vh - 75px);
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  background:#FAF8F3;
+}
+
+
+.register-card{
+
+  width:420px;
+
+  padding:40px;
+
+  background:#FFFFFF;
+
+  border-radius:24px;
+
+  border:1px solid #E5E7EB;
+
+  box-shadow:
+  0 20px 45px rgba(15,118,110,0.12);
+
+  color:#1E293B;
+}
+
+
+.register-card h1{
+
+  text-align:center;
+
+  font-size:34px;
+
+  font-weight:800;
+
+  margin-bottom:10px;
+}
+
+
+.register-card p{
+
+  text-align:center;
+
+  color:#64748B;
+
+  margin-bottom:30px;
+}
+
+
+.register-card form{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:18px;
+}
+
+
+.register-card input{
+
+  padding:14px 18px;
+
+  border-radius:12px;
+
+  border:1px solid #D1D5DB;
+
+  outline:none;
+
+  font-size:15px;
+}
+
+
+.register-card input:focus{
+
+  border-color:#14B8A6;
+
+  box-shadow:
+  0 0 0 4px rgba(20,184,166,.15);
+}
+
+
+.register-card button[type="submit"]{
+
+  padding:14px;
+
+  border:none;
+
+  border-radius:12px;
+
+  background:
+  linear-gradient(
+  135deg,
+  #0F766E,
+  #14B8A6
+  );
+
+  color:white;
+
+  font-size:16px;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:.3s;
+}
+
+
+.register-card button[type="submit"]:hover{
+
+  transform:translateY(-3px);
+
+  box-shadow:
+  0 12px 25px rgba(20,184,166,.35);
+}
+
+
+.register-footer{
+
+  text-align:center;
+
+  margin-top:25px;
+
+  color:#64748B;
+}
+
+
+.register-footer a{
+
+  color:#0F766E;
+
+  font-weight:700;
+
+  text-decoration:none;
+
+  margin-left:5px;
+
+  cursor:pointer;
+}
+
+
+.register-footer a:hover{
+
+  color:#14B8A6;
+
+  text-decoration:underline;
+}
+
+
+.message{
+
+  text-align:center;
+
+  margin-top:15px;
+
+  color:#15803D;
+}
+
+/* ================= DARK MODE ================= */
+
+body.dark .register-page{
+background:#020617;
+}
+
+body.dark .register-card{
+background:#0F172A;
+border:1px solid #334155;
+box-shadow:0 20px 45px rgba(0,0,0,.35);
+color:#E2E8F0;
+}
+
+body.dark .register-card h1{
+color:#F8FAFC;
+}
+
+body.dark .register-card p{
+color:#94A3B8;
+}
+
+body.dark .register-card input{
+background:#1E293B;
+border:1px solid #334155;
+color:#E2E8F0;
+}
+
+body.dark .register-card input::placeholder{
+color:#94A3B8;
+}
+
+body.dark .register-footer{
+color:#94A3B8;
+}
+
+body.dark .register-footer a{
+color:#5EEAD4;
+}
+
+body.dark .register-footer a:hover{
+color:#99F6E4;
+}
+
+body.dark .message{
+color:#4ADE80;
+}
