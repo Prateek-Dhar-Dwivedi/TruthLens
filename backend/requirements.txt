@@ -5,19 +5,19 @@ gunicorn==23.0.0
 python-dotenv==1.1.0
 python-multipart==0.0.20
 
-pydantic==2.11.3
-pydantic-core==2.33.1
+pydantic==2.10.6
+pydantic-core==2.27.2
 email-validator==2.2.0
 
 # Database
 pymongo==4.12.0
 dnspython==2.7.0
 
-# HTTP requests
+# HTTP
 requests==2.32.3
 httpx==0.28.1
 
-# Web scraping / News processing
+# Scraping / News
 beautifulsoup4==4.13.3
 newspaper3k==0.2.8
 lxml==5.3.1
@@ -35,7 +35,7 @@ nltk==3.9.1
 jieba3k==0.35.1
 regex==2024.11.6
 
-# Machine Learning (Render compatible)
+# Machine Learning
 numpy==1.26.4
 scipy==1.13.1
 scikit-learn==1.5.2
@@ -49,12 +49,12 @@ sentence-transformers==2.7.0
 safetensors==0.5.3
 huggingface_hub==0.30.2
 
-# Google Gemini API
+# Google Gemini
 google-generativeai==0.8.5
 google-ai-generativelanguage==0.6.15
 google-api-core==2.24.2
-google-auth==2.38.0
 google-api-python-client==2.166.0
+google-auth==2.38.0
 google-auth-httplib2==0.2.0
 googleapis-common-protos==1.69.1
 proto-plus==1.26.1
@@ -63,7 +63,6 @@ grpcio==1.71.0
 grpcio-status==1.71.0
 
 # Utilities
-numpy==1.26.4
 pillow==11.1.0
 PyYAML==6.0.2
 python-dateutil==2.9.0.post0
@@ -75,11 +74,12 @@ cryptography==44.0.2
 PyJWT==2.10.1
 passlib==1.7.4
 
-# File parsing
-filelock==3.18.0
-packaging==24.2
-six==1.17.0
-typing_extensions==4.13.2
+# Async / Server
+anyio==4.8.0
+h11==0.14.0
+starlette==0.46.1
+watchfiles==1.0.4
+websockets==15.0.1
 
 # CLI / Formatting
 click==8.1.8
@@ -89,9 +89,9 @@ markdown-it-py==3.0.0
 Pygments==2.19.1
 mdurl==0.1.2
 
-# Async
-anyio==4.8.0
-h11==0.14.0
-starlette==0.46.1
-watchfiles==1.0.4
-websockets==15.0.1
+# Common dependencies
+filelock==3.18.0
+packaging==24.2
+six==1.17.0
+typing_extensions==4.13.2
+urllib3==2.3.0
