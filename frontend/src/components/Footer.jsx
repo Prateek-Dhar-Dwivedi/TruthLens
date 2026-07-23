@@ -1,4 +1,5 @@
 import "./Footer.css";
+import { Link } from "react-router-dom";
 
 function Footer() {
 
@@ -28,17 +29,17 @@ function Footer() {
               Platform
             </h3>
 
-            <a href="/">
+            <Link href="/">
               Fact Check
-            </a>
+            </Link>
 
-            <a href="/history">
+            <Link href="/history">
               History
-            </a>
+            </Link>
 
-            <a href="/dashboard">
+            <Link href="/dashboard">
               Dashboard
-            </a>
+            </Link>
 
           </div>
 
@@ -48,17 +49,17 @@ function Footer() {
               Resources
             </h3>
 
-            <a href="#">
+            <Link href="#">
               About
-            </a>
+            </Link>
 
-            <a href="#">
-              Privacy
-            </a>
+            <Link href="#">
+              Home
+            </Link>
 
-            <a href="#">
+            <Link href="https://prateek-dhar-dwivedi.github.io/-Portfolio/">
               Contact
-            </a>
+            </Link>
 
           </div>
 
