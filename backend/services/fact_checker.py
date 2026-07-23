@@ -1,46 +1,62 @@
 import os
-import requests
+import google.generativeai as genai
 
-HF_TOKEN = os.getenv("HF_TOKEN")
 
-API_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
+# Get Gemini API key from environment
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-HEADERS = {
-    "Authorization": f"Bearer {HF_TOKEN}",
-    "Content-Type": "application/json"
-}
+genai.configure(api_key=GEMINI_API_KEY)
+
+
+# Gemini model
+model = genai.GenerativeModel(
+    "gemini-2.5-flash"
+)
 
 
 def check_claim(claim, evidence):
-    text = f"""
-Claim: {claim}
 
-Evidence: {evidence}
+    prompt = f"""
+You are a professional fact-checking AI.
+
+Analyze the claim using the provided evidence.
+
+Claim:
+{claim}
+
+Evidence:
+{evidence}
+
+Classify the claim into exactly one category:
+- supports claim
+- contradicts claim
+- neutral
+
+Also provide a confidence score between 0 and 1.
+
+Return ONLY valid JSON in this format:
+
+{{
+    "label": "supports claim | contradicts claim | neutral",
+    "score": 0.0,
+    "reason": "short explanation"
+}}
 """
 
-    payload = {
-        "inputs": text,
-        "parameters": {
-            "candidate_labels": [
-                "supports claim",
-                "contradicts claim",
-                "neutral"
-            ]
-        }
-    }
+    response = model.generate_content(prompt)
 
-    response = requests.post(
-        API_URL,
-        headers=HEADERS,
-        json=payload,
-        timeout=60
-    )
+    result_text = response.text.strip()
 
-    response.raise_for_status()
+    # Remove markdown JSON formatting if Gemini adds it
+    result_text = result_text.replace("```json", "")
+    result_text = result_text.replace("```", "")
 
-    result = response.json()
+    import json
+
+    result = json.loads(result_text)
 
     return {
-        "label": result["labels"][0],
-        "score": float(result["scores"][0])
+        "label": result["label"],
+        "score": float(result["score"]),
+        "reason": result["reason"]
     }
