@@ -1,28 +1,26 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 
 from services.search import search_news
 from services.fact_checker import check_claim
 from services.explainer import generate_explanation
 
-from database import history_collection
-from datetime import datetime
-
-from database import users_collection
-from auth import hash_password
+from database import (
+    history_collection,
+    users_collection,
+    saved_collection,
+)
 
 from auth import (
+    hash_password,
     verify_password,
-    create_token
+    create_token,
+    verify_token,
 )
 
 from services.article_extractor import extract_article
 from bson import ObjectId
 
-from fastapi import Header
-from auth import verify_token
-
-from url_checker import extract_article
 from urllib.parse import urlparse
 
 from source_scores import get_source_score
