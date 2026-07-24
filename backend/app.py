@@ -1,32 +1,28 @@
+from datetime import datetime
+from urllib.parse import urlparse
+
+from bson import ObjectId
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
-
-from services.search import search_news
-from services.fact_checker import check_claim
-from services.explainer import generate_explanation
-
-from database import (
-    history_collection,
-    users_collection,
-    saved_collection,
-)
 
 from auth import (
     hash_password,
     verify_password,
     create_token,
-    verify_token,
+    verify_token
+)
+
+from database import (
+    history_collection,
+    users_collection,
+    saved_collection
 )
 
 from services.article_extractor import extract_article
-from bson import ObjectId
-
-from urllib.parse import urlparse
-
-from source_scores import get_source_score
-from urllib.parse import urlparse
-
-from database import saved_collection
+from services.explainer import generate_explanation
+from services.fact_checker import check_claim
+from services.search import search_news
+from services.verifier import verify_claim
 
 from utils.source_score import (
     get_source_score,
@@ -117,7 +113,7 @@ def login(data: dict):
 @app.post("/fact-check")
 def fact_check(data: dict):
 
-    claim = data["claim"].strip()
+    claim = data.get("claim", "").strip()
 
     if len(claim.split()) < 3:
         return {
@@ -126,7 +122,22 @@ def fact_check(data: dict):
 
     news = search_news(claim)
 
-    articles = news.get("articles", [])
+    articles = news.get(
+        "articles",
+        []
+    )
+
+    # Filter out unrelated articles
+    verified_articles = verify_claim(
+        claim,
+        articles
+    )
+
+    # Run ONNX model only on relevant articles
+    result = check_claim(
+        claim,
+        verified_articles
+    )
 
     if not articles:
         return {
@@ -138,140 +149,37 @@ def fact_check(data: dict):
             "neutral": 0,
             "analysis": [],
             "explanation": [
-                "No relevant news articles were found."
+                "No evidence found."
             ]
         }
 
-    claim_words = [
-        word.lower()
-        for word in claim.split()
-        if len(word) > 3
-    ]
+    result = check_claim(claim, articles)
 
-    results = []
+    current_user = get_current_user(data.get("token"))
 
-    supports = 0
-    contradicts = 0
-    neutral = 0
-
-    for article in articles:
-
-        text = (
-            article.get("title", "") +
-            " " +
-            str(article.get("description", ""))
-        ).lower()
-
-        matches = sum(
-            1 for word in claim_words
-            if word in text
-        )
-
-        if matches < 2:
-            continue
-
-        evidence = (
-            article.get("title", "") +
-            " " +
-            str(article.get("description", ""))
-        )
-
-        result = check_claim(
-            claim,
-            evidence
-        )
-
-        label = result["label"]
-        score = round(
-            result["score"],
-            3
-        )
-
-        if score < 0.50:
-            continue
-
-        if label == "supports claim":
-            supports += 1
-
-        elif label == "contradicts claim":
-            contradicts += 1
-
-        else:
-            neutral += 1
-            
-        credibility = get_source_score(
-         article.get("url", "")
-           )
-        
-        results.append({
-            "title": article.get("title", ""),
-            "url": article.get("url", ""),
-            "label": label,
-            "score": score,
-            "credibility": credibility,
-            "credibility_label": get_source_label(
-        credibility
-    )
-            })
-
-    if not results:
-        return {
+    if current_user:
+        history_collection.insert_one({
+            "email": current_user,
             "claim": claim,
-            "verdict": "No Evidence Found",
-            "confidence": 0,
-            "supports": 0,
-            "contradicts": 0,
-            "neutral": 0,
-            "analysis": [],
-            "explanation": [
-                "No sufficiently relevant evidence was found."
-            ]
-        }
-
-    if supports > contradicts:
-        verdict = "Likely True"
-
-    elif contradicts > supports:
-        verdict = "Likely False"
-
-    else:
-        verdict = "Uncertain"
-
-    total = supports + contradicts + neutral
-
-    confidence = round(
-        max(supports, contradicts) / total * 100,
-        2
-    )
-
-    explanation = generate_explanation(results)
-
-    current_user = get_current_user(
-    data.get("token")
-    )
-
-    history_collection.insert_one({
-        "email": current_user,
-        "claim": claim,
-        "verdict": verdict,
-        "confidence": confidence,
-        "supports": supports,
-        "contradicts": contradicts,
-        "neutral": neutral,
-        "createdAt": datetime.utcnow()
-    })
+            "verdict": result["verdict"],
+            "confidence": result["confidence"],
+            "supports": result["supports"],
+            "contradicts": result["contradicts"],
+            "neutral": result["neutral"],
+            "createdAt": datetime.utcnow()
+        })
 
     return {
         "claim": claim,
-        "verdict": verdict,
-        "confidence": confidence,
-        "supports": supports,
-        "contradicts": contradicts,
-        "neutral": neutral,
-        "analysis": results,
-        "explanation": explanation
+        "verdict": result["verdict"],
+        "confidence": result["confidence"],
+        "supports": result["supports"],
+        "contradicts": result["contradicts"],
+        "neutral": result["neutral"],
+        "analysis": result["analysis"],
+        "explanation": result["explanation"]
     }
-  
+    
 @app.get("/my-history")
 def my_history(
     authorization: str = Header(None)
@@ -368,286 +276,162 @@ def get_stats():
     }
     
 @app.post("/fact-check-url")
-def fact_check_url(data:dict):
-    
-    url=data["url"]
+def fact_check_url(data: dict):
 
-    original_domain=urlparse(
-        url
-    ).netloc.lower()
+    url = data["url"]
 
-    article=extract_article(url)
+    # -------------------------
+    # Extract article
+    # -------------------------
+
+    article = extract_article(url)
 
     if "error" in article:
-        return{
-            "error":article["error"]
+        return {
+            "error": article["error"]
         }
 
-    title=article["title"]
+    title = article["title"]
+    text = article["text"]
 
-    text=article["text"]
+    # -------------------------
+    # Search related news
+    # -------------------------
 
-    junk_phrases=[
-        "is a senior reporter",
-        "joined The Verge",
-        "daily email digest",
-        "homepage feed",
-        "Posts from this author",
-        "Subscribe",
-        "Sign up",
-        "Advertisement"
-    ]
+    news = search_news(title)
 
-    for phrase in junk_phrases:
-
-        if phrase in text:
-
-            pos=text.find(phrase)
-
-            next_period=text.find(
-                ".",
-                pos
-            )
-
-            if next_period!=-1:
-
-                text=text[
-                    next_period+1:
-                ]
-
-    text=" ".join(
-        text.split()
-    )
-
-    claim=title
-
-    news=search_news(
-        claim
-    )
-
-    articles=news.get(
-        "articles",
-        []
-    )
+    articles = news.get("articles", [])
 
     if not articles:
 
-        search_query=" ".join(
-            title
-            .replace(":"," ")
-            .replace(","," ")
-            .replace("'","")
-            .split()[:8]
+        search_query = " ".join(
+            title.replace(":", " ")
+                 .replace(",", " ")
+                 .replace("'", "")
+                 .split()[:8]
         )
 
-        news=search_news(
-            search_query
-        )
+        news = search_news(search_query)
 
-        articles=news.get(
-            "articles",
-            []
-        )
+        articles = news.get("articles", [])
 
     if not articles:
 
-        search_query=" ".join(
+        search_query = " ".join(
             text.split()[:25]
         )
 
-        news=search_news(
-            search_query
-        )
+        news = search_news(search_query)
 
-        articles=news.get(
-            "articles",
-            []
-        )
+        articles = news.get("articles", [])
 
     if not articles:
 
-        return{
-            "article_title":title,
-            "verdict":"No Evidence Found",
-            "confidence":0,
-            "supports":0,
-            "contradicts":0,
-            "neutral":0,
-            "analysis":[],
-            "article_preview":text[:1000]
+        return {
+            "article_title": title,
+            "verdict": "No Evidence Found",
+            "confidence": 0,
+            "supports": 0,
+            "contradicts": 0,
+            "neutral": 0,
+            "analysis": [],
+            "article_preview": text[:1000]
         }
 
-    same_domain_articles=[]
-    other_articles=[]
+    # -------------------------
+    # Remove same-domain sources
+    # -------------------------
+
+    original_domain = urlparse(url).netloc.lower()
+
+    filtered_articles = []
 
     for item in articles:
 
-        evidence_url=item.get(
-            "url",
-            ""
-        )
+        evidence_url = item.get("url", "")
 
-        evidence_domain=urlparse(
+        evidence_domain = urlparse(
             evidence_url
         ).netloc.lower()
 
-        if evidence_domain==original_domain:
+        if evidence_domain != original_domain:
+            filtered_articles.append(item)
 
-            same_domain_articles.append(
-                item
-            )
+    if filtered_articles:
+        articles = filtered_articles
 
-        else:
+    print("News Articles:", len(articles))
 
-            other_articles.append(
-                item
-            )
+    # -------------------------
+    # Verify Similarity
+    # -------------------------
 
-    if other_articles:
-        articles=other_articles
+    claim = title + "\n\n" + text[:3000]
 
-    else:
-        articles=same_domain_articles
-
-    results=[]
-
-    supports=0
-    contradicts=0
-    neutral=0
-
-    for item in articles:
-
-        evidence_url=item.get(
-            "url",
-            ""
-        )
-
-        evidence=(
-            item.get(
-                "title",
-                ""
-            )
-            +
-            " "
-            +
-            str(
-                item.get(
-                    "description",
-                    ""
-                )
-            )
-        )
-
-        result=check_claim(
-            claim,
-            evidence
-        )
-
-        score=round(
-            result["score"],
-            3
-        )
-
-        if score<0.5:
-            continue
-
-        label=result["label"]
-
-        if label=="supports claim":
-
-            supports+=1
-
-        elif label=="contradicts claim":
-
-            contradicts+=1
-
-        else:
-
-            neutral+=1
-        
-        credibility = get_source_score(
-    evidence_url
-          )
-        
-        results.append({
-            "title":item.get(
-                "title",
-                ""
-            ),
-            "url":evidence_url,
-            "label":label,
-            "score":score,
-            "credibility": credibility,
-            "credibility_label": get_source_label(
-        credibility
-            )
-        })
-
-    results.sort(
-        key=lambda x:x["score"],
-        reverse=True
+    verified_articles = verify_claim(
+        claim,
+        articles
     )
 
-    if not results:
+    print("Verified:", len(verified_articles))
 
-        return{
-            "article_title":title,
-            "verdict":"Insufficient Evidence",
-            "confidence":0,
-            "supports":0,
-            "contradicts":0,
-            "neutral":0,
-            "analysis":[],
-            "article_preview":text[:1000]
+    if not verified_articles:
+
+        return {
+            "article_title": title,
+            "verdict": "No Similar Evidence",
+            "confidence": 0,
+            "supports": 0,
+            "contradicts": 0,
+            "neutral": 0,
+            "analysis": [],
+            "article_preview": text[:1000]
         }
 
-    verdict="Uncertain"
+    # -------------------------
+    # ONNX Fact Check
+    # -------------------------
 
-    if supports>contradicts:
-
-        verdict="Likely True"
-
-    elif contradicts>supports:
-
-        verdict="Likely False"
-
-    total=(
-        supports+
-        contradicts+
-        neutral
+    result = check_claim(
+        claim,
+        verified_articles
     )
 
-    confidence=(
-        round(
-            max(
-                supports,
-                contradicts
-            )/total*100,
-            2
-        )
-        if total>0
-        else 0
-    )
+    print(result)
 
-    return{
-        "article_title":title,
-        "verdict":verdict,
-        "confidence":confidence,
-        "supports":supports,
-        "contradicts":contradicts,
-        "neutral":neutral,
-        "analysis":results,
-        "article_preview":text[:1000]
+    # -------------------------
+    # Return
+    # -------------------------
+
+    return {
+
+        "article_title": title,
+
+        "verdict": result["verdict"],
+
+        "confidence": result["confidence"],
+
+        "supports": result["supports"],
+
+        "contradicts": result["contradicts"],
+
+        "neutral": result["neutral"],
+
+        "analysis": result["analysis"],
+
+        "article_preview": text[:1000],
+
+        "explanation": result["explanation"]
+
     }
+    
 @app.post("/ask")
 def ask_ai(data: dict):
 
     question = data.get("question", "").strip()
 
     if not question:
-        return {
-            "error": "Question is required"
-        }
+        return {"error": "Question is required"}
 
     claim = question
 
@@ -673,10 +457,14 @@ def ask_ai(data: dict):
             claim = claim[len(starter):]
             break
 
-    return fact_check({
+    response = fact_check({
         "claim": claim,
         "token": data.get("token")
     })
+
+    # print(response)   # <-- ADD THIS
+
+    return response
     
 @app.get("/trending-news")
 def trending_news():
