@@ -311,32 +311,6 @@ NEWS_API_KEY=your_news_api_key
 
 ---
 
-# 📷 Screenshots
-
-## Home
-
-(Add Screenshot)
-
----
-
-## Fact Check
-
-(Add Screenshot)
-
----
-
-## AI Assistant
-
-(Add Screenshot)
-
----
-
-## Dashboard
-
-(Add Screenshot)
-
----
-
 # 📈 Future Improvements
 
 - Voice Assistant
