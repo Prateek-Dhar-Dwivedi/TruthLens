@@ -1,62 +1,500 @@
-import os
-import google.generativeai as genai
+import numpy as np
+import onnxruntime as ort
+from transformers import AutoTokenizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from huggingface_hub import snapshot_download
 
 
-# Get Gemini API key from environment
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# ==========================
+# MODEL
+# ==========================
 
-genai.configure(api_key=GEMINI_API_KEY)
+try:
+    MODEL_DIR = snapshot_download(
+        repo_id="Prateek-Dhar-Dwivedi/truthlens-onnx",
+        cache_dir="./hf_models"
+    )
+
+    MODEL_PATH = f"{MODEL_DIR}/model.onnx"
+
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
+
+    session = ort.InferenceSession(
+        MODEL_PATH,
+        providers=["CPUExecutionProvider"]
+    )
+
+    print("TruthLens ONNX model loaded successfully.")
+
+except Exception as e:
+    print("Failed to load ONNX model:", e)
+    raise
+
+LABELS = {
+    0: "Entailment",
+    1: "Neutral",
+    2: "Contradiction"
+}
 
 
-# Gemini model
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
-)
+
+# ==========================
+# SIMILARITY
+# ==========================
+
+def get_similarity(claim, text):
+
+    try:
+
+        vectorizer = TfidfVectorizer(
+            stop_words="english"
+        )
+
+        vectors = vectorizer.fit_transform(
+            [
+                claim,
+                text
+            ]
+        )
 
 
-def check_claim(claim, evidence):
+        return float(
+            cosine_similarity(
+                vectors[0],
+                vectors[1]
+            )[0][0]
+        )
 
-    prompt = f"""
-You are a professional fact-checking AI.
+    except:
 
-Analyze the claim using the provided evidence.
+        return 0
 
-Claim:
-{claim}
 
-Evidence:
-{evidence}
 
-Classify the claim into exactly one category:
-- supports claim
-- contradicts claim
-- neutral
 
-Also provide a confidence score between 0 and 1.
+# ==========================
+# NLI
+# ==========================
 
-Return ONLY valid JSON in this format:
+def predict_nli(evidence, claim):
 
-{{
-    "label": "supports claim | contradicts claim | neutral",
-    "score": 0.0,
-    "reason": "short explanation"
-}}
-"""
 
-    response = model.generate_content(prompt)
+    inputs = tokenizer(
 
-    result_text = response.text.strip()
+        evidence,
 
-    # Remove markdown JSON formatting if Gemini adds it
-    result_text = result_text.replace("```json", "")
-    result_text = result_text.replace("```", "")
+        claim,
 
-    import json
+        truncation=True,
 
-    result = json.loads(result_text)
+        padding=True,
+
+        max_length=256,
+
+        return_tensors="np"
+
+    )
+
+
+    inputs = {
+
+        k:v.astype(np.int64)
+
+        for k,v in inputs.items()
+
+    }
+
+
+    output = session.run(
+        None,
+        inputs
+    )
+
+
+    logits = output[0][0]
+
+
+    exp = np.exp(
+        logits - np.max(logits)
+    )
+
+
+    probs = exp / exp.sum()
+
+
+    index = int(
+        np.argmax(probs)
+    )
+
 
     return {
-        "label": result["label"],
-        "score": float(result["score"]),
-        "reason": result["reason"]
+
+        "label":
+            LABELS[index],
+
+        "score":
+            round(
+                float(
+                    probs[index] * 100
+                ),
+                2
+            )
+
+    }
+
+
+
+
+# ==========================
+# FACT CHECK
+# ==========================
+
+def check_claim(claim, articles):
+
+
+    analysis = []
+
+
+    support = 0
+
+    contradict = 0
+
+    neutral = 0
+
+
+
+
+    for article in articles:
+
+
+        if not isinstance(article, dict):
+
+            continue
+
+
+
+        title = article.get(
+            "title",
+            ""
+        )
+
+
+        description = str(
+            article.get(
+                "description",
+                ""
+            )
+            or ""
+        )
+
+
+
+        url = (
+
+            article.get("url")
+
+            or
+
+            article.get("link")
+
+            or
+
+            ""
+
+        )
+
+
+
+        text = (
+
+            title
+
+            +
+
+            " "
+
+            +
+
+            description
+
+        )
+
+
+
+        similarity = get_similarity(
+            claim,
+            text
+        )
+
+
+        if similarity < 0.05:
+
+            continue
+
+
+
+        result = predict_nli(
+            text,
+            claim
+        )
+
+
+        label = result["label"]
+
+        score = result["score"]
+
+
+
+
+        if label == "Entailment":
+
+            support += 1
+
+
+        elif label == "Contradiction":
+
+            contradict += 1
+
+
+        else:
+
+            neutral += 1
+
+
+
+
+        analysis.append({
+
+            "title":
+                title,
+
+            "description":
+                description,
+
+            "url":
+                url,
+
+            "label":
+                label,
+
+            "score":
+                score,
+
+            "credibility":
+                50,
+
+            "credibility_label":
+                "Medium"
+
+        })
+
+
+
+
+
+    # ======================
+    # NO EVIDENCE
+    # ======================
+
+    if len(analysis) == 0:
+
+
+        return {
+
+
+            "claim":
+                claim,
+
+
+            "verdict":
+                "No Evidence Found",
+
+
+            "label":
+                "No Evidence Found",
+
+
+            "score":
+                0,
+
+
+            "confidence":
+                0,
+
+
+            "support":
+                0,
+
+
+            "supports":
+                0,
+
+
+            "contradict":
+                0,
+
+
+            "contradicts":
+                0,
+
+
+            "neutral":
+                0,
+
+
+            "analysis":
+                [],
+
+
+            "evidence":
+                []
+
+        }
+
+
+
+
+
+    # ======================
+    # VERDICT
+    # ======================
+
+    if support > contradict:
+
+        verdict = "True"
+
+
+    elif contradict > support:
+
+        verdict = "False"
+
+
+    else:
+
+        verdict = "Uncertain"
+
+
+
+
+    total = (
+        support
+        +
+        contradict
+        +
+        neutral
+    )
+
+
+
+    confidence = round(
+
+        (
+            max(
+                support,
+                contradict
+            )
+
+            /
+
+            total
+
+        )
+
+        *
+
+        100,
+
+        2
+
+    )
+
+
+
+
+
+    return {
+
+
+        "claim":
+            claim,
+
+
+        # frontend
+
+        "verdict":
+            verdict,
+
+
+        # app.py
+
+        "label":
+            verdict,
+
+
+
+        # both app.py and frontend
+
+        "score":
+            confidence,
+
+
+        "confidence":
+            confidence,
+
+
+
+        # frontend
+
+        "supports":
+            support,
+
+
+        "contradicts":
+            contradict,
+
+
+
+        # app.py
+
+        "support":
+            support,
+
+
+        "contradict":
+            contradict,
+
+
+
+        "neutral":
+            neutral,
+
+
+
+        # frontend
+
+        "analysis":
+            analysis,
+
+
+
+        # app.py
+
+        "evidence":
+            analysis,
+
+
+
+        "explanation":[
+
+            f"AI analyzed {len(analysis)} sources.",
+
+            f"Supporting evidence: {support}",
+
+            f"Contradicting evidence: {contradict}",
+
+            f"Neutral evidence: {neutral}"
+
+        ]
+
     }
