@@ -41,8 +41,9 @@ function Assistant() {
         } catch (err) {
 
             console.log(err);
+
             Swal.fire({
-                icon: "warning",
+                icon: "error",
                 title: "Process Failed",
                 text: "Failed to process question",
                 confirmButtonColor: "#14B8A6"
@@ -57,6 +58,7 @@ function Assistant() {
     };
 
     return (
+
         <div className="assistant-page">
 
             <div className="assistant-card">
@@ -108,27 +110,87 @@ function Assistant() {
 
                         </div>
 
+                        {/* AI SUMMARY */}
+
                         {answer.explanation && (
 
                             <div className="assistant-summary">
 
                                 <h3>AI Summary</h3>
 
-                                {Array.isArray(answer.explanation) ? (
+                                {Array.isArray(answer.explanation)
 
-                                    answer.explanation.map((item, index) => (
-                                        <p key={index}>{item}</p>
+                                    ? answer.explanation.map((item, index) => (
+
+                                        <p key={index}>
+                                            {item}
+                                        </p>
+
                                     ))
 
-                                ) : (
+                                    : <p>{answer.explanation}</p>
 
-                                    <p>{answer.explanation}</p>
-
-                                )}
+                                }
 
                             </div>
 
                         )}
+
+                        {/* SOURCES */}
+
+                        {answer.analysis &&
+                            answer.analysis.length > 0 && (
+
+                                <div className="assistant-sources">
+
+                                    <h3>Sources</h3>
+
+                                    {answer.analysis.map((source, index) => (
+
+                                        <div
+                                            key={index}
+                                            className="assistant-source-card"
+                                        >
+
+                                            <h4>
+                                                {source.title}
+                                            </h4>
+
+                                            <p>
+
+                                                <strong>
+                                                    {source.label}
+                                                </strong>
+
+                                                {" • "}
+
+                                                {source.score}%
+
+                                            </p>
+
+                                            <p>
+
+                                                Credibility:
+                                                {" "}
+                                                {source.credibility_label}
+
+                                            </p>
+
+                                            <a
+                                                href={source.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                Read Source →
+                                            </a>
+
+                                        </div>
+
+                                    ))}
+
+                                </div>
+
+                            )}
 
                     </div>
 
@@ -137,6 +199,7 @@ function Assistant() {
             </div>
 
         </div>
+
     );
 
 }

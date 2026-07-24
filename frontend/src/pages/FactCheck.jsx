@@ -182,7 +182,9 @@ function FactCheck() {
 
                 <br />
 
-                <a
+                <a onClick={() => {
+    console.log("Opening:", item.url);
+  }}
                   href={item.url}
                   target="_blank"
                   rel="noreferrer"
