@@ -30,13 +30,8 @@ def search_news(query):
             params=params,
             timeout=15
         )
-
-        print("Status Code:", response.status_code)
-
         data = response.json()
-
-        print("NewsAPI Response:", data)
-
+        
         if data.get("status") != "ok":
             print("NewsAPI Error:", data.get("message"))
             return {"articles": []}
