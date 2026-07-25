@@ -133,6 +133,9 @@ def fact_check(data: dict):
         articles
     )
 
+    print("Articles found:", len(articles))
+    print(articles)
+
     # Run ONNX model only on relevant articles
     result = check_claim(
         claim,
