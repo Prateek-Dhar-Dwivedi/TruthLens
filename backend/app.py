@@ -360,8 +360,6 @@ def fact_check_url(data: dict):
     if filtered_articles:
         articles = filtered_articles
 
-    print("News Articles:", len(articles))
-
     # -------------------------
     # Verify Similarity
     # -------------------------
@@ -372,8 +370,6 @@ def fact_check_url(data: dict):
         claim,
         articles
     )
-
-    print("Verified:", len(verified_articles))
 
     if not verified_articles:
 
@@ -396,8 +392,6 @@ def fact_check_url(data: dict):
         claim,
         verified_articles
     )
-
-    print(result)
 
     # -------------------------
     # Return
@@ -461,8 +455,6 @@ def ask_ai(data: dict):
         "claim": claim,
         "token": data.get("token")
     })
-
-    # print(response)   # <-- ADD THIS
 
     return response
     
