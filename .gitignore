@@ -61,3 +61,5 @@ temp/
 .DS_Store
 
 backend/models/model.onnx
+
+backend/models/
