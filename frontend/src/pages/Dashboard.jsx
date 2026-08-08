@@ -250,7 +250,7 @@ function Dashboard(){
             <tr>
               <th>Claim</th>
               <th>Verdict</th>
-              <th>Confidence</th>
+              <th>Probability</th>
             </tr>
           </thead>
 
