@@ -136,7 +136,7 @@ function FactCheck() {
             <h2>{result.verdict}</h2>
 
             <div className="confidence">
-              Confidence: {result.confidence}%
+              Probability: {result.confidence}%
             </div>
 
             <div className="stats">
