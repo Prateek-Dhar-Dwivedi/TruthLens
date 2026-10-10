@@ -127,18 +127,6 @@ def fact_check(data: dict):
         []
     )
 
-    # Filter out unrelated articles
-    verified_articles = verify_claim(
-        claim,
-        articles
-    )
-
-    # Run ONNX model only on relevant articles
-    result = check_claim(
-        claim,
-        verified_articles
-    )
-
     if not articles:
         return {
             "claim": claim,
@@ -153,7 +141,19 @@ def fact_check(data: dict):
             ]
         }
 
-    result = check_claim(claim, articles)
+    # Filter out unrelated articles
+    verified_articles = verify_claim(
+        claim,
+        articles
+    )
+
+    target_articles = verified_articles if verified_articles else articles[:5]
+
+    # Run ONNX model only on relevant articles
+    result = check_claim(
+        claim,
+        target_articles
+    )
 
     current_user = get_current_user(data.get("token"))
 

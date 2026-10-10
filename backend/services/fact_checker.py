@@ -4,6 +4,7 @@ from transformers import AutoTokenizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from huggingface_hub import snapshot_download
+from utils.source_score import get_source_score, get_source_label
 
 
 # ==========================
@@ -282,10 +283,10 @@ def check_claim(claim, articles):
                 score,
 
             "credibility":
-                50,
+                get_source_score(url),
 
             "credibility_label":
-                "Medium"
+                get_source_label(get_source_score(url))
 
         })
 

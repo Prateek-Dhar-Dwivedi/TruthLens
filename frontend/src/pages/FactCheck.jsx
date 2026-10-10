@@ -162,8 +162,7 @@ function FactCheck() {
                 </p>
 
                 <p>
-                  Match Score:
-                  {item.score}
+                  Confidence: {item.score}%
                 </p>
 
                 <p>
