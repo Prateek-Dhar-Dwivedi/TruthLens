@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../api";
 import "./Assistant.css";
 import Swal from "sweetalert2";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 function Assistant() {
 
@@ -83,6 +84,13 @@ function Assistant() {
                 >
                     {loading ? "Thinking..." : "Ask AI"}
                 </button>
+
+                <div className="ai-warning-banner">
+                    <FaExclamationTriangle className="warning-icon" />
+                    <span>
+                        <strong>Notice:</strong> TruthLens AI can make mistakes. Please verify critical factual responses with official sources.
+                    </span>
+                </div>
 
                 {answer && (
 
@@ -191,6 +199,13 @@ function Assistant() {
                                 </div>
 
                             )}
+
+                        <div className="result-disclaimer">
+                            <FaExclamationTriangle className="disclaimer-icon" />
+                            <span>
+                                <strong>Disclaimer:</strong> TruthLens AI can make mistakes. Cross-examine results with authoritative primary sources before making important decisions.
+                            </span>
+                        </div>
 
                     </div>
 

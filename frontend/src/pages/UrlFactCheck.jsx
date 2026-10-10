@@ -9,7 +9,8 @@ import {
     FaMinusCircle,
     FaFilePdf,
     FaShieldAlt,
-    FaExternalLinkAlt
+    FaExternalLinkAlt,
+    FaExclamationTriangle
 } from "react-icons/fa";
 
 function UrlFactCheck() {
@@ -88,6 +89,13 @@ function UrlFactCheck() {
                 >
                     {loading ? "Analyzing..." : "Analyze URL"}
                 </button>
+
+                <div className="ai-warning-banner">
+                    <FaExclamationTriangle className="warning-icon" />
+                    <span>
+                        <strong>Notice:</strong> TruthLens AI can make mistakes. Please verify critical article claims with primary official sources.
+                    </span>
+                </div>
 
                 {loading && (
                     <div className="loading-box">
@@ -218,6 +226,13 @@ function UrlFactCheck() {
 
                             </>
                         )}
+
+                        <div className="result-disclaimer">
+                            <FaExclamationTriangle className="disclaimer-icon" />
+                            <span>
+                                <strong>Disclaimer:</strong> TruthLens AI can make mistakes. Cross-examine results with authoritative primary sources before making important decisions.
+                            </span>
+                        </div>
 
                     </div>
 

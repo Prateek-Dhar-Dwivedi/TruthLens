@@ -1,5 +1,6 @@
 import "./Footer.css";
 import { Link } from "react-router-dom";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 function Footer() {
 
@@ -69,8 +70,14 @@ function Footer() {
 
       <div className="footer-bottom">
 
-        © {new Date().getFullYear()} TruthLens.
-        All rights reserved.
+        <p className="footer-disclaimer" style={{ marginBottom: "12px", color: "#D97706", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "0.88rem", fontWeight: "500" }}>
+          <FaExclamationTriangle /> TruthLens AI can make mistakes. Please verify critical facts with official primary sources.
+        </p>
+
+        <div>
+          © {new Date().getFullYear()} TruthLens.
+          All rights reserved.
+        </div>
 
       </div>
 

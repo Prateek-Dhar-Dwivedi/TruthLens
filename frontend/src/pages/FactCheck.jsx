@@ -9,7 +9,8 @@ import {
   FaTimesCircle,
   FaMinusCircle,
   FaBookmark,
-  FaExternalLinkAlt
+  FaExternalLinkAlt,
+  FaExclamationTriangle
 } from "react-icons/fa";
 
 function FactCheck() {
@@ -134,7 +135,13 @@ function FactCheck() {
 
           )}
 
+        </div>
 
+        <div className="ai-warning-banner">
+          <FaExclamationTriangle className="warning-icon" />
+          <span>
+            <strong>Notice:</strong> TruthLens AI can make mistakes. Please verify critical facts with official primary sources.
+          </span>
         </div>
 
         {result && (
@@ -206,6 +213,13 @@ function FactCheck() {
 
               </div>
             ))}
+
+            <div className="result-disclaimer">
+              <FaExclamationTriangle className="disclaimer-icon" />
+              <span>
+                <strong>Disclaimer:</strong> TruthLens AI can make mistakes. Cross-examine results with authoritative primary sources before making important decisions.
+              </span>
+            </div>
 
           </div>
         )}

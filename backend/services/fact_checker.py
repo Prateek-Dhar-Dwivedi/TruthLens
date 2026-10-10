@@ -335,7 +335,11 @@ def check_claim(claim, articles):
             "neutral": 0,
             "analysis": [],
             "evidence": [],
-            "explanation": ["No evidence found."]
+            "disclaimer": "TruthLens AI can make mistakes. Please verify critical facts with official primary sources.",
+            "explanation": [
+                "No evidence found.",
+                "TruthLens AI can make mistakes. Please verify critical facts with official sources."
+            ]
         }
 
     # ======================
@@ -404,10 +408,12 @@ def check_claim(claim, articles):
         "neutral": neutral_count,
         "analysis": analysis,
         "evidence": analysis,
+        "disclaimer": "TruthLens AI can make mistakes. Please verify critical facts with official primary sources.",
         "explanation": [
             f"AI analyzed {len(analysis)} sources.",
             f"Supporting evidence: {support_count}",
             f"Contradicting evidence: {contradict_count}",
-            f"Neutral evidence: {neutral_count}"
+            f"Neutral evidence: {neutral_count}",
+            "TruthLens AI can make mistakes. Please verify critical facts with official sources."
         ]
     }
