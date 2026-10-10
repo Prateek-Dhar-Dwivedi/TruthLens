@@ -20,6 +20,7 @@ test_cases = [
     {"claim": "Humans have landed on Mars", "expected": "False"},
     {"claim": "Apple acquired OpenAI for 500 billion dollars", "expected": "False"},
     {"claim": "NASA confirmed the moon is made of green cheese", "expected": "False"},
+    {"claim": "Apple launches 20 pro max", "expected": "False"},
 
     # Questions
     {"claim": "Did Donald Trump rename AI to Super Intelligence?", "expected": "True"},

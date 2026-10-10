@@ -237,6 +237,26 @@ def check_claim(claim, articles):
                     lbl = "Contradiction" if is_uncrewed else "Neutral"
                     sc = 85.0
 
+            # Product version consistency check:
+            # If claim specifies a product version number (e.g. iPhone 20, GPT-5, PS6)
+            # but premise discusses a different version (e.g. iPhone 18) and does not mention target version:
+            claim_ver = re.search(r'\b(?:iphone|gpt|playstation|galaxy|windows|pixel|chandrayaan)\s*(\d+)\b', claim, re.I)
+            if not claim_ver and re.search(r'\bapple\b', claim, re.I):
+                claim_ver = re.search(r'\b(\d{1,2})\s*(?:pro|pro\s*max|plus|mini)\b', claim, re.I)
+
+            article_has_version_mismatch = False
+            if claim_ver:
+                target_ver = claim_ver.group(1)
+                prem_ver = re.search(r'\b(?:iphone|gpt|playstation|galaxy|windows|pixel|chandrayaan)\s*(\d+)\b', cand, re.I)
+                if not prem_ver and re.search(r'\bapple\b', cand, re.I):
+                    prem_ver = re.search(r'\b(\d{1,2})\s*(?:pro|pro\s*max|plus|mini)\b', cand, re.I)
+
+                has_target = bool(re.search(r'\b' + re.escape(target_ver) + r'\b', cand))
+                if prem_ver and prem_ver.group(1) != target_ver and not has_target:
+                    article_has_version_mismatch = True
+                    lbl = "Contradiction"
+                    sc = 95.0
+
             if lbl == "Entailment":
                 if best_entailment is None or sc > best_entailment["score"]:
                     best_entailment = {"label": "Entailment", "score": sc, "text": cand}
@@ -251,12 +271,12 @@ def check_claim(claim, articles):
         has_explicit_refutation = bool(REFUTATION_PATTERN.search(full_context))
 
         # Resolution hierarchy:
-        # 1. High-confidence Entailment confirms the event
-        if best_entailment and best_entailment["score"] >= 65.0:
+        # 1. High-confidence Entailment confirms the event (provided no version mismatch exists)
+        if best_entailment and best_entailment["score"] >= 65.0 and not article_has_version_mismatch:
             final_label = "Entailment"
             final_score = best_entailment["score"]
-        # 2. Genuine Contradiction: must have explicit refutation/debunking language
-        elif best_contradiction and has_explicit_refutation:
+        # 2. Genuine Contradiction: must have explicit refutation/debunking language or version mismatch
+        elif best_contradiction and (has_explicit_refutation or article_has_version_mismatch):
             final_label = "Contradiction"
             final_score = best_contradiction["score"]
         # 3. If model predicted contradiction but text has NO debunking language,

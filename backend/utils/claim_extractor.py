@@ -63,7 +63,16 @@ def normalize_claim(claim: str) -> str:
         normalized = re.sub(r'\bSI\b', 'Super Intelligence', normalized)
         normalized = re.sub(r'\bsi\b', 'Super Intelligence', normalized)
 
-    # 6. Clean excessive whitespace
+    # 6. Normalize shorthand Apple product claims: "Apple launches 20 pro max" -> "Apple launches iPhone 20 Pro Max"
+    if re.search(r'\bapple\b', normalized, re.IGNORECASE) and not re.search(r'\biphone\b', normalized, re.IGNORECASE):
+        normalized = re.sub(
+            r'\b(\d{1,2})\s*(pro\s*max|pro|plus|mini)\b',
+            r'iPhone \1 \2',
+            normalized,
+            flags=re.IGNORECASE
+        )
+
+    # 7. Clean excessive whitespace
     return " ".join(normalized.split())
 
 def extract_search_keywords(claim: str) -> str:
