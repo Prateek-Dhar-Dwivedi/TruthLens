@@ -42,6 +42,16 @@ function UrlFactCheck() {
                 { url }
             );
 
+            if (res.data.error) {
+                Swal.fire({
+                    icon: "info",
+                    title: "Notice",
+                    text: res.data.error,
+                    confirmButtonColor: "#14B8A6"
+                });
+                return;
+            }
+
             setResult(res.data);
 
         } catch (err) {
@@ -118,9 +128,9 @@ function UrlFactCheck() {
                         <h2>{result.article_title}</h2>
 
                         <div
-                            className={`verdict ${result.verdict === "Likely True"
+                            className={`verdict ${result.verdict === "Likely True" || result.verdict === "True"
                                 ? "true"
-                                : result.verdict === "Likely False"
+                                : result.verdict === "Likely False" || result.verdict === "False"
                                     ? "false"
                                     : "uncertain"
                                 }`}
@@ -135,15 +145,15 @@ function UrlFactCheck() {
                         <div className="stats">
 
                             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                                <FaCheckCircle style={{ color: "#10B981" }} /> Supports: {result.supports}
+                                <FaCheckCircle style={{ color: "#10B981" }} /> Supports: {result.supports ?? 0}
                             </div>
 
                             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                                <FaTimesCircle style={{ color: "#EF4444" }} /> Contradicts: {result.contradicts}
+                                <FaTimesCircle style={{ color: "#EF4444" }} /> Contradicts: {result.contradicts ?? 0}
                             </div>
 
                             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                                <FaMinusCircle style={{ color: "#94A3B8" }} /> Neutral: {result.neutral}
+                                <FaMinusCircle style={{ color: "#94A3B8" }} /> Neutral: {result.neutral ?? 0}
                             </div>
 
                         </div>

@@ -331,7 +331,10 @@ def get_stats():
 @app.post("/fact-check-url")
 def fact_check_url(data: dict):
 
-    url = data["url"]
+    url = data.get("url", "").strip()
+
+    if not url:
+        return {"error": "Please enter a valid URL"}
 
     # -------------------------
     # Extract article
@@ -345,41 +348,34 @@ def fact_check_url(data: dict):
         }
 
     title = article["title"]
-    text = article["text"]
+    text = article.get("text", "")
+
+    # Clean title for news search (strip source publisher suffix like ' - Forbes')
+    import re
+    search_title = re.sub(r'\s*-\s*[A-Za-z0-9\s]+$', '', title).strip()
 
     # -------------------------
     # Search related news
     # -------------------------
 
-    news = search_news(title)
-
+    news = search_news(search_title)
     articles = news.get("articles", [])
 
-    if not articles:
+    if not articles and search_title != title:
+        news = search_news(title)
+        articles = news.get("articles", [])
 
+    if not articles:
         search_query = " ".join(
             title.replace(":", " ")
                  .replace(",", " ")
                  .replace("'", "")
                  .split()[:8]
         )
-
         news = search_news(search_query)
-
         articles = news.get("articles", [])
 
     if not articles:
-
-        search_query = " ".join(
-            text.split()[:25]
-        )
-
-        news = search_news(search_query)
-
-        articles = news.get("articles", [])
-
-    if not articles:
-
         return {
             "article_title": title,
             "verdict": "No Evidence Found",
@@ -392,57 +388,39 @@ def fact_check_url(data: dict):
         }
 
     # -------------------------
-    # Remove same-domain sources
+    # Remove same-domain sources if other sources exist
     # -------------------------
 
-    original_domain = urlparse(url).netloc.lower()
+    original_domain = urlparse(url).netloc.lower().replace("www.", "")
 
     filtered_articles = []
 
     for item in articles:
-
         evidence_url = item.get("url", "")
-
-        evidence_domain = urlparse(
-            evidence_url
-        ).netloc.lower()
-
+        evidence_domain = urlparse(evidence_url).netloc.lower().replace("www.", "")
         if evidence_domain != original_domain:
             filtered_articles.append(item)
 
-    if filtered_articles:
-        articles = filtered_articles
+    target_articles = filtered_articles if filtered_articles else articles
 
     # -------------------------
     # Verify Similarity
     # -------------------------
 
-    claim = title + "\n\n" + text[:3000]
-
     verified_articles = verify_claim(
-        claim,
-        articles
+        search_title,
+        target_articles
     )
 
     if not verified_articles:
-
-        return {
-            "article_title": title,
-            "verdict": "No Similar Evidence",
-            "confidence": 0,
-            "supports": 0,
-            "contradicts": 0,
-            "neutral": 0,
-            "analysis": [],
-            "article_preview": text[:1000]
-        }
+        verified_articles = target_articles[:5]
 
     # -------------------------
     # ONNX Fact Check
     # -------------------------
 
     result = check_claim(
-        claim,
+        search_title,
         verified_articles
     )
 
@@ -451,25 +429,16 @@ def fact_check_url(data: dict):
     # -------------------------
 
     return {
-
         "article_title": title,
-
         "verdict": result["verdict"],
-
         "confidence": result["confidence"],
-
         "supports": result["supports"],
-
         "contradicts": result["contradicts"],
-
         "neutral": result["neutral"],
-
         "analysis": result["analysis"],
-
         "article_preview": text[:1000],
-
-        "explanation": result["explanation"]
-
+        "explanation": result["explanation"],
+        "disclaimer": result.get("disclaimer", "TruthLens AI can make mistakes. Please verify critical facts with official sources.")
     }
     
 @app.post("/ask")
