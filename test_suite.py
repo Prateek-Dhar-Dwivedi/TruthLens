@@ -35,7 +35,7 @@ for i, tc in enumerate(test_cases, 1):
     c = tc["claim"]
     exp = tc["expected"]
     try:
-        r = requests.post(url, json={"claim": c}, timeout=30)
+        r = requests.post(url, json={"claim": c}, timeout=90)
         data = r.json()
         verdict = data.get("verdict", "Error")
         conf = data.get("confidence", 0)

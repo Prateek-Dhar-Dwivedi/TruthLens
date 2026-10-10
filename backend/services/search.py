@@ -29,18 +29,30 @@ def search_wikipedia(query, limit=5):
         response = requests.get(url, params=params, headers=headers, timeout=8)
         data = response.json()
         wiki_articles = []
-        for item in data.get("query", {}).get("search", []):
+        for item in data.get("query", {}).get("search", [])[:4]:
             raw_title = str(item.get("title") or "").strip()
             raw_snippet = str(item.get("snippet") or "").strip()
             clean_snippet = re.sub(r'<[^<]+?>', '', raw_snippet)
             clean_snippet = html.unescape(clean_snippet).strip()
-            if not clean_snippet:
+            if not clean_snippet and not raw_title:
                 continue
+
+            # Fetch lead summary extract from Wikipedia REST API for richer context
+            lead_text = clean_snippet
+            try:
+                summary_url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{raw_title.replace(' ', '_')}"
+                s_resp = requests.get(summary_url, headers=headers, timeout=5)
+                if s_resp.status_code == 200:
+                    ext = s_resp.json().get("extract")
+                    if ext and len(ext) > len(clean_snippet):
+                        lead_text = ext
+            except Exception:
+                pass
 
             wiki_articles.append({
                 "title": raw_title,
-                "description": clean_snippet,
-                "content": clean_snippet,
+                "description": lead_text,
+                "content": lead_text,
                 "url": f"https://en.wikipedia.org/wiki/{raw_title.replace(' ', '_')}",
                 "source": {"name": "Wikipedia"}
             })

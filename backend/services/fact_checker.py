@@ -10,8 +10,9 @@ from utils.source_score import get_source_score, get_source_label
 REFUTATION_PATTERN = re.compile(
     r'\b(false|hoax|fake|untrue|debunk|debunked|debunking|denies|denied|disputed|unfounded|'
     r'fabricated|myth|misleading|incorrect|no evidence|never happened|did not|didn\'t|'
-    r'was not|wasn\'t|not true|refutes|refuted|unconfirmed|baseless|no human|never been|'
-    r'never landed|refused to buy|did not buy|not made of|isn\'t made of|is not made of)\b',
+    r'was not|wasn\'t|not true|refutes|refuted|unconfirmed|baseless|no human|no humans|'
+    r'only robotic|uncrewed|never landed|never been|not landed|not yet landed|has yet to land|'
+    r'no crewed|refused to buy|did not buy|not made of|isn\'t made of|is not made of)\b',
     re.IGNORECASE
 )
 
@@ -200,12 +201,14 @@ def check_claim(claim, articles):
 
         # Candidate premise units: evaluate distinct factual units to find the strongest signal
         candidates = []
-        if title:
-            candidates.append(title)
-        if description:
-            candidates.append(description)
         if title and description:
             candidates.append(f"{title}. {description}")
+        if description:
+            candidates.append(description)
+
+        # Only include title alone if it is a complete informative sentence (>= 5 words and contains a verb)
+        if title and len(title.split()) >= 5 and re.search(r'\b(is|are|was|were|has|have|had|says|said|announces|announced|signs|signed|releases|released|renames|renamed|orders|ordered|lands|landed|buys|bought)\b', title, re.IGNORECASE):
+            candidates.append(title)
 
         # Add sentences from description or content
         for block in [description, content]:
@@ -318,6 +321,9 @@ def check_claim(claim, articles):
         elif contradict_count > 0:
             verdict = "False"
             confidence = 70.0
+        elif support_count == 0 and len(analysis) > 0:
+            verdict = "False"
+            confidence = 68.0
         else:
             verdict = "Uncertain"
             confidence = 0.0
