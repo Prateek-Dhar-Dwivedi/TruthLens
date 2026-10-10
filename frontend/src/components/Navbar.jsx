@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import "./Navbar.css";
 import { useTheme } from "../context/ThemeContext";
 import { FaSun, FaMoon, FaUser } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 function Navbar() {
     const { darkMode, toggleTheme } = useTheme();
@@ -43,11 +44,22 @@ function Navbar() {
 
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
 
         localStorage.removeItem("token");
         setToken(null);
         setShowAccountMenu(false);
+        window.dispatchEvent(new Event("storage"));
+
+        await Swal.fire({
+            icon: "success",
+            title: "Logged Out Successfully",
+            text: "You have been logged out. See you soon!",
+            confirmButtonColor: "#14B8A6",
+            timer: 1500,
+            showConfirmButton: false
+        });
+
         navigate("/auth");
 
     };

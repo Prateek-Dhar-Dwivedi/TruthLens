@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../api";
 import "./Register.css";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 function Register({setShowLogin}){
 
@@ -27,6 +28,14 @@ function Register({setShowLogin}){
 
             if(res.data.error){
                 setMessage(res.data.error);
+
+                Swal.fire({
+                    icon: "error",
+                    title: "Registration Failed",
+                    text: res.data.error,
+                    confirmButtonColor: "#14B8A6"
+                });
+
                 return;
             }
 
@@ -35,24 +44,33 @@ function Register({setShowLogin}){
                 "Registration successful"
             );
 
+            await Swal.fire({
+                icon: "success",
+                title: "Registration Successful!",
+                text: "Your TruthLens account has been created. Redirecting to login...",
+                confirmButtonColor: "#14B8A6",
+                timer: 2000,
+                showConfirmButton: false
+            });
 
             setName("");
             setEmail("");
             setPassword("");
 
-
-            setTimeout(()=>{
-                setShowLogin(true);
-            },1000);
-
+            setShowLogin(true);
 
         }
         catch(err){
 
-            setMessage(
-                err.response?.data?.error ||
-                "Registration failed"
-            );
+            const errText = err.response?.data?.error || "Registration failed. Please try again.";
+            setMessage(errText);
+
+            Swal.fire({
+                icon: "error",
+                title: "Registration Failed",
+                text: errText,
+                confirmButtonColor: "#14B8A6"
+            });
 
         }
     };
