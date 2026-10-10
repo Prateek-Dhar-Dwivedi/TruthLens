@@ -21,7 +21,7 @@ from database import (
 from services.article_extractor import extract_article
 from services.explainer import generate_explanation
 from services.fact_checker import check_claim
-from services.search import search_news
+from services.search import search_news, search_wikipedia
 from services.verifier import verify_claim
 
 from utils.source_score import (
@@ -117,84 +117,111 @@ def login(data: dict):
 @app.post("/fact-check")
 def fact_check(data: dict):
 
-    original_claim = data.get("claim", "").strip()
+    try:
+        original_claim = str(data.get("claim", "")).strip()
 
-    if len(original_claim.split()) < 3:
+        if len(original_claim.split()) < 3:
+            return {
+                "error": "Please enter a complete factual claim."
+            }
+
+        # Normalize claim to handle colloquial phrasing, questions, typos, and modern acronyms
+        normalized_claim = normalize_claim(original_claim)
+
+        # 1. Search news using normalized claim first
+        news = search_news(normalized_claim)
+        articles = news.get("articles") or []
+
+        # 2. If no articles found, search core keywords (removes filler words and punctuation)
+        if not articles:
+            keywords = extract_search_keywords(normalized_claim)
+            if keywords and keywords != normalized_claim:
+                news = search_news(keywords)
+                articles = news.get("articles") or []
+
+        # 3. If still no articles, fallback to original query
+        if not articles and normalized_claim != original_claim:
+            news = search_news(original_claim)
+            articles = news.get("articles") or []
+
+        # Filter out unrelated articles using similarity with normalized claim
+        verified_articles = verify_claim(
+            normalized_claim,
+            articles
+        )
+
+        target_articles = verified_articles if verified_articles else articles[:5]
+
+        # 4. If target_articles is empty or has very low similarity (< 0.08), query Wikipedia fallback
+        max_sim = max((a.get("sim_raw", 0) for a in target_articles), default=0.0)
+        if not target_articles or max_sim < 0.08:
+            wiki_articles = search_wikipedia(normalized_claim)
+            if wiki_articles:
+                verified_wiki = verify_claim(normalized_claim, wiki_articles)
+                if verified_wiki:
+                    target_articles = (target_articles or []) + verified_wiki
+
+        if not target_articles:
+            return {
+                "claim": original_claim,
+                "verdict": "No Evidence Found",
+                "confidence": 0,
+                "supports": 0,
+                "contradicts": 0,
+                "neutral": 0,
+                "analysis": [],
+                "explanation": [
+                    "No evidence found."
+                ]
+            }
+
+        # Run ONNX model on relevant articles
+        result = check_claim(
+            normalized_claim,
+            target_articles
+        )
+
+        try:
+            current_user = get_current_user(data.get("token"))
+            if current_user:
+                history_collection.insert_one({
+                    "email": current_user,
+                    "claim": original_claim,
+                    "verdict": result["verdict"],
+                    "confidence": result["confidence"],
+                    "supports": result["supports"],
+                    "contradicts": result["contradicts"],
+                    "neutral": result["neutral"],
+                    "createdAt": datetime.utcnow()
+                })
+        except Exception as db_err:
+            print("Database save error (non-fatal):", db_err)
+
         return {
-            "error": "Please enter a complete factual claim."
-        }
-
-    # Normalize claim to handle colloquial phrasing, questions, typos, and modern acronyms
-    normalized_claim = normalize_claim(original_claim)
-
-    # 1. Search news using normalized claim first
-    news = search_news(normalized_claim)
-    articles = news.get("articles", [])
-
-    # 2. If no articles found, search core keywords (removes filler words and punctuation)
-    if not articles:
-        keywords = extract_search_keywords(normalized_claim)
-        if keywords and keywords != normalized_claim:
-            news = search_news(keywords)
-            articles = news.get("articles", [])
-
-    # 3. If still no articles, fallback to original query
-    if not articles and normalized_claim != original_claim:
-        news = search_news(original_claim)
-        articles = news.get("articles", [])
-
-    if not articles:
-        return {
-            "claim": original_claim,
-            "verdict": "No Evidence Found",
-            "confidence": 0,
-            "supports": 0,
-            "contradicts": 0,
-            "neutral": 0,
-            "analysis": [],
-            "explanation": [
-                "No evidence found."
-            ]
-        }
-
-    # Filter out unrelated articles using similarity with normalized claim
-    verified_articles = verify_claim(
-        normalized_claim,
-        articles
-    )
-
-    target_articles = verified_articles if verified_articles else articles[:5]
-
-    # Run ONNX model on relevant articles
-    result = check_claim(
-        normalized_claim,
-        target_articles
-    )
-
-    current_user = get_current_user(data.get("token"))
-
-    if current_user:
-        history_collection.insert_one({
-            "email": current_user,
             "claim": original_claim,
             "verdict": result["verdict"],
             "confidence": result["confidence"],
             "supports": result["supports"],
             "contradicts": result["contradicts"],
             "neutral": result["neutral"],
-            "createdAt": datetime.utcnow()
-        })
+            "analysis": result["analysis"],
+            "explanation": result["explanation"]
+        }
 
-    return {
-        "claim": original_claim,
-        "verdict": result["verdict"],
-        "confidence": result["confidence"],
-        "supports": result["supports"],
-        "contradicts": result["contradicts"],
-        "neutral": result["neutral"],
-        "analysis": result["analysis"],
-        "explanation": result["explanation"]
-    }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            "claim": original_claim if 'original_claim' in locals() else "",
+            "verdict": "Uncertain",
+            "confidence": 0,
+            "supports": 0,
+            "contradicts": 0,
+            "neutral": 0,
+            "analysis": [],
+            "explanation": [f"Verification completed with uncertainty: {str(e)}"],
+            "error_detail": str(e)
+        }
     
 @app.get("/my-history")
 def my_history(

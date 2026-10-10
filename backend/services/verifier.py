@@ -46,27 +46,14 @@ def verify_claim(claim, articles):
         if not isinstance(article, dict):
             continue
 
-        title = article.get(
-            "title",
-            ""
-        )
+        title = str(article.get("title") or "").strip()
+        description = str(article.get("description") or "").strip()
+        content = str(article.get("content") or "").strip()
+        url = str(article.get("url") or article.get("link") or "").strip()
 
-        description = str(
-            article.get(
-                "description",
-                ""
-            ) or ""
-        )
-
-        url = (
-            article.get("url")
-            or
-            article.get("link")
-            or
-            ""
-        )
-
-        text = f"{title} {description}"
+        # Build comprehensive representation for similarity matching
+        parts = [p for p in [title, description, content] if p]
+        text = ". ".join(parts) if parts else ""
 
         similarity = get_similarity(
             claim,
@@ -74,22 +61,16 @@ def verify_claim(claim, articles):
         )
 
         verified_articles.append({
-
             "title": title,
-
             "description": description,
-
+            "content": content,
             "url": url,
-
             "text": text,
-
             "similarity": round(
                 similarity * 100,
                 2
             ),
-
             "sim_raw": similarity
-
         })
 
     verified_articles.sort(

@@ -64,3 +64,4 @@ backend/models/model.onnx
 
 backend/models/
 backend/hf_models/
+hf_models/
