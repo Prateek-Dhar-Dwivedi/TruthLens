@@ -181,6 +181,16 @@ def fact_check(data: dict):
             target_articles
         )
 
+        # If news analysis yielded Uncertain (e.g. only peripheral/neutral articles found), query Wikipedia
+        if result["verdict"] == "Uncertain" or (result["supports"] == 0 and result["contradicts"] == 0):
+            wiki_articles = search_wikipedia(normalized_claim)
+            if wiki_articles:
+                verified_wiki = verify_claim(normalized_claim, wiki_articles)
+                if verified_wiki:
+                    wiki_result = check_claim(normalized_claim, verified_wiki)
+                    if wiki_result["verdict"] in ["True", "False"]:
+                        result = wiki_result
+
         try:
             current_user = get_current_user(data.get("token"))
             if current_user:

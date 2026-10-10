@@ -309,7 +309,20 @@ def check_claim(claim, articles):
     # ======================
     # VERDICT DETERMINATION
     # ======================
-    if total_support_weight > 0 and total_contradict_weight == 0:
+    decisive_weight = total_support_weight + total_contradict_weight
+
+    if decisive_weight == 0:
+        if support_count > 0:
+            verdict = "True"
+            confidence = 70.0
+        elif contradict_count > 0:
+            verdict = "False"
+            confidence = 70.0
+        else:
+            verdict = "Uncertain"
+            confidence = 0.0
+
+    elif total_support_weight > 0 and total_contradict_weight == 0:
         verdict = "True"
         confidence = round(min(98.5, max(68.0, 75.0 + total_support_weight * 7)), 1)
 
@@ -319,21 +332,21 @@ def check_claim(claim, articles):
 
     elif total_support_weight >= total_contradict_weight * 1.2:
         verdict = "True"
-        ratio = total_support_weight / (total_support_weight + total_contradict_weight)
+        ratio = total_support_weight / decisive_weight
         confidence = round(min(98.5, max(60.0, ratio * 94.0)), 1)
 
     elif total_contradict_weight >= total_support_weight * 1.2:
         verdict = "False"
-        ratio = total_contradict_weight / (total_support_weight + total_contradict_weight)
+        ratio = total_contradict_weight / decisive_weight
         confidence = round(min(98.5, max(60.0, ratio * 94.0)), 1)
 
     elif support_count > contradict_count:
         verdict = "True"
-        confidence = round(min(80.0, max(52.0, (support_count / len(analysis)) * 75)), 1)
+        confidence = round(min(80.0, max(52.0, (support_count / max(1, len(analysis))) * 75)), 1)
 
     elif contradict_count > support_count:
         verdict = "False"
-        confidence = round(min(80.0, max(52.0, (contradict_count / len(analysis)) * 75)), 1)
+        confidence = round(min(80.0, max(52.0, (contradict_count / max(1, len(analysis))) * 75)), 1)
 
     else:
         verdict = "Uncertain"
