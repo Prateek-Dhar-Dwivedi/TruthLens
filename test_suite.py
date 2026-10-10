@@ -27,8 +27,8 @@ test_cases = [
     {"claim": "Did Apple buy Tesla?", "expected": "False"}
 ]
 
-print(f"Starting rigorous test suite ({len(test_cases)} cases)...")
-print("=" * 70)
+print(f"Starting rigorous test suite ({len(test_cases)} cases)...", flush=True)
+print("=" * 70, flush=True)
 
 results = []
 
@@ -59,20 +59,20 @@ for i, tc in enumerate(test_cases, 1):
             "pass": is_pass
         })
         
-        print(f"[{status}] Case {i:02d}: \"{c}\"")
-        print(f"       Expected: {exp} | Actual: {verdict} ({conf}%) [Sup: {sup}, Con: {con}, Neu: {neu}]")
+        print(f"[{status}] Case {i:02d}: \"{c}\"", flush=True)
+        print(f"       Expected: {exp} | Actual: {verdict} ({conf}%) [Sup: {sup}, Con: {con}, Neu: {neu}]", flush=True)
         
         # Print top source if failed
         if not is_pass and data.get("analysis"):
             top = data["analysis"][0]
-            print(f"       Top source: [{top.get('label')}] {top.get('title')[:60]}")
+            print(f"       Top source: [{top.get('label')}] {top.get('title')[:60]}", flush=True)
             
     except Exception as e:
-        print(f"[ERR ] Case {i:02d}: \"{c}\" -> {e}")
+        print(f"[ERR ] Case {i:02d}: \"{c}\" -> {e}", flush=True)
         results.append({"claim": c, "expected": exp, "actual": "Error", "pass": False})
         
     time.sleep(1.5)
 
-print("=" * 70)
+print("=" * 70, flush=True)
 passed = sum(1 for r in results if r["pass"])
-print(f"Test Run Completed: {passed}/{len(results)} passed ({passed/len(results)*100:.1f}%)")
+print(f"Test Run Completed: {passed}/{len(results)} passed ({passed/len(results)*100:.1f}%)", flush=True)
