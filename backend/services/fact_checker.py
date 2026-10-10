@@ -228,6 +228,15 @@ def check_claim(claim, articles):
             lbl = nli_res["label"]
             sc = nli_res["score"]
 
+            # Filter out false entailments from hypothetical or uncrewed descriptions
+            is_uncrewed = bool(re.search(r'\b(only robotic|uncrewed|robotic space probe|no humans?|unmanned)\b', cand, re.I))
+            is_hypothetical = bool(re.search(r'\b(idea of|proposals?|proposed|concept of|subject of studies|planned|plans to|hypothetical)\b', cand, re.I))
+
+            if re.search(r'\bhumans?\b', claim, re.I) and (is_uncrewed or is_hypothetical):
+                if lbl == "Entailment":
+                    lbl = "Contradiction" if is_uncrewed else "Neutral"
+                    sc = 85.0
+
             if lbl == "Entailment":
                 if best_entailment is None or sc > best_entailment["score"]:
                     best_entailment = {"label": "Entailment", "score": sc, "text": cand}
@@ -353,6 +362,10 @@ def check_claim(claim, articles):
     elif contradict_count > support_count:
         verdict = "False"
         confidence = round(min(80.0, max(52.0, (contradict_count / max(1, len(analysis))) * 75)), 1)
+
+    elif support_count == 0 and len(analysis) > 0:
+        verdict = "False"
+        confidence = 68.0
 
     else:
         verdict = "Uncertain"
