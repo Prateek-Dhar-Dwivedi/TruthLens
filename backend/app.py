@@ -28,6 +28,7 @@ from utils.source_score import (
     get_source_score,
     get_source_label
 )
+from utils.claim_extractor import normalize_claim
 
 app = FastAPI()
 
@@ -113,23 +114,28 @@ def login(data: dict):
 @app.post("/fact-check")
 def fact_check(data: dict):
 
-    claim = data.get("claim", "").strip()
+    original_claim = data.get("claim", "").strip()
 
-    if len(claim.split()) < 3:
+    if len(original_claim.split()) < 3:
         return {
             "error": "Please enter a complete factual claim."
         }
 
-    news = search_news(claim)
+    # Normalize claim to handle colloquial phrasing, questions, and modern acronyms
+    normalized_claim = normalize_claim(original_claim)
 
-    articles = news.get(
-        "articles",
-        []
-    )
+    # Search news using normalized claim first
+    news = search_news(normalized_claim)
+    articles = news.get("articles", [])
+
+    # If normalized query yielded no articles, fallback to original query
+    if not articles and normalized_claim != original_claim:
+        news = search_news(original_claim)
+        articles = news.get("articles", [])
 
     if not articles:
         return {
-            "claim": claim,
+            "claim": original_claim,
             "verdict": "No Evidence Found",
             "confidence": 0,
             "supports": 0,
@@ -141,17 +147,17 @@ def fact_check(data: dict):
             ]
         }
 
-    # Filter out unrelated articles
+    # Filter out unrelated articles using similarity with normalized claim
     verified_articles = verify_claim(
-        claim,
+        normalized_claim,
         articles
     )
 
     target_articles = verified_articles if verified_articles else articles[:5]
 
-    # Run ONNX model only on relevant articles
+    # Run ONNX model on relevant articles
     result = check_claim(
-        claim,
+        normalized_claim,
         target_articles
     )
 
@@ -160,7 +166,7 @@ def fact_check(data: dict):
     if current_user:
         history_collection.insert_one({
             "email": current_user,
-            "claim": claim,
+            "claim": original_claim,
             "verdict": result["verdict"],
             "confidence": result["confidence"],
             "supports": result["supports"],
@@ -170,7 +176,7 @@ def fact_check(data: dict):
         })
 
     return {
-        "claim": claim,
+        "claim": original_claim,
         "verdict": result["verdict"],
         "confidence": result["confidence"],
         "supports": result["supports"],

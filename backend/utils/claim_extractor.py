@@ -1,80 +1,53 @@
-# import os
-# import json
-# import google.generativeai as genai
+import re
 
-# genai.configure(
-#     api_key=os.getenv(
-#         "GEMINI_API_KEY"
-#     )
-# )
+def normalize_claim(claim: str) -> str:
+    """
+    Lightweight rule-based claim normalizer that standardizes colloquial
+    syntax, handles conversational negation patterns, and expands emerging acronyms
+    without adding latency or external API calls.
+    """
+    if not claim:
+        return ""
 
-# model = genai.GenerativeModel(
-#     "gemini-3.5-flash"
-# )
+    normalized = claim.strip()
 
-# def extract_claims_ai(text):
+    # 1. Strip trailing punctuation
+    if normalized.endswith("?"):
+        normalized = normalized[:-1].strip()
 
-#     try:
+    # 2. Strip conversational question starters
+    starters = [
+        "is it true that ",
+        "is it real that ",
+        "did ",
+        "does ",
+        "do ",
+        "is ",
+        "are ",
+        "was ",
+        "were ",
+        "has ",
+        "have "
+    ]
+    lower = normalized.lower()
+    for starter in starters:
+        if lower.startswith(starter):
+            normalized = normalized[len(starter):].strip()
+            break
 
-#         prompt=f"""
-# You are a professional fact-checking assistant.
+    # 3. Normalize colloquial negation/preference syntax:
+    # "X no but Y yes" or "X no Y yes" -> "replace X with Y"
+    normalized = re.sub(
+        r'\b([a-zA-Z0-9]+)\s+no\s+(?:but\s+)?([a-zA-Z0-9]+)\s+yes\b',
+        r'replace \1 with \2',
+        normalized,
+        flags=re.IGNORECASE
+    )
 
-# Extract the 5 most important factual claims from this news article.
+    # 4. Contextual acronym expansion for recent events (e.g. SI -> Super Intelligence)
+    if re.search(r'\b(ai|trump|technology|tech|musk|intelligence)\b', normalized, re.IGNORECASE):
+        normalized = re.sub(r'\bSI\b', 'Super Intelligence', normalized)
+        normalized = re.sub(r'\bsi\b', 'Super Intelligence', normalized)
 
-# Rules:
-
-# - Return only factual statements.
-# - Ignore opinions.
-# - Ignore quotes unless they contain a verifiable fact.
-# - Ignore advertisements.
-# - Ignore author information.
-# - Ignore speculation.
-# - Maximum 5 claims.
-# - Return JSON array only.
-
-# Article:
-
-# {text[:8000]}
-# """
-
-#         response=model.generate_content(
-#             prompt
-#         )
-
-#         content=response.text.strip()
-
-#         if content.startswith("```json"):
-#             content=content.replace(
-#                 "```json",
-#                 ""
-#             )
-
-#         if content.endswith("```"):
-#             content=content.replace(
-#                 "```",
-#                 ""
-#             )
-
-#         claims=json.loads(
-#             content
-#         )
-
-#         if isinstance(
-#             claims,
-#             list
-#         ):
-#             return claims
-
-#         return []
-
-#     except Exception as e:
-
-#         print(
-#             "Claim Extraction Error:",
-#             str(e)
-#         )
-
-#         return []
-
-
-# NOT IN USE NOW
+    # 5. Clean excessive whitespace
+    return " ".join(normalized.split())

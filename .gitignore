@@ -63,3 +63,4 @@ temp/
 backend/models/model.onnx
 
 backend/models/
+backend/hf_models/

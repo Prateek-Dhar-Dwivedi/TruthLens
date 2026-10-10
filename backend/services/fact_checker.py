@@ -386,29 +386,18 @@ def check_claim(claim, articles):
         neutral
     )
 
+    decisive = support + contradict
 
-
-    confidence = round(
-
-        (
-            max(
-                support,
-                contradict
-            )
-
-            /
-
-            total
-
+    if total == 0:
+        confidence = 0.0
+    elif decisive == 0:
+        confidence = 0.0
+    else:
+        ratio = max(support, contradict) / decisive
+        confidence = round(
+            (0.75 * ratio + 0.25 * (max(support, contradict) / total)) * 100,
+            1
         )
-
-        *
-
-        100,
-
-        2
-
-    )
 
 
 
