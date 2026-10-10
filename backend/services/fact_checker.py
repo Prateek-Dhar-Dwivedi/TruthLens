@@ -229,7 +229,7 @@ def check_claim(claim, articles):
         )
 
 
-        if similarity < 0.05:
+        if similarity < 0.08:
 
             continue
 

@@ -28,7 +28,10 @@ from utils.source_score import (
     get_source_score,
     get_source_label
 )
-from utils.claim_extractor import normalize_claim
+from utils.claim_extractor import (
+    normalize_claim,
+    extract_search_keywords
+)
 
 app = FastAPI()
 
@@ -121,14 +124,21 @@ def fact_check(data: dict):
             "error": "Please enter a complete factual claim."
         }
 
-    # Normalize claim to handle colloquial phrasing, questions, and modern acronyms
+    # Normalize claim to handle colloquial phrasing, questions, typos, and modern acronyms
     normalized_claim = normalize_claim(original_claim)
 
-    # Search news using normalized claim first
+    # 1. Search news using normalized claim first
     news = search_news(normalized_claim)
     articles = news.get("articles", [])
 
-    # If normalized query yielded no articles, fallback to original query
+    # 2. If no articles found, search core keywords (removes filler words and punctuation)
+    if not articles:
+        keywords = extract_search_keywords(normalized_claim)
+        if keywords and keywords != normalized_claim:
+            news = search_news(keywords)
+            articles = news.get("articles", [])
+
+    # 3. If still no articles, fallback to original query
     if not articles and normalized_claim != original_claim:
         news = search_news(original_claim)
         articles = news.get("articles", [])

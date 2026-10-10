@@ -73,10 +73,6 @@ def verify_claim(claim, articles):
             text
         )
 
-        # Ignore unrelated articles
-        if similarity < 0.05:
-            continue
-
         verified_articles.append({
 
             "title": title,
@@ -90,7 +86,9 @@ def verify_claim(claim, articles):
             "similarity": round(
                 similarity * 100,
                 2
-            )
+            ),
+
+            "sim_raw": similarity
 
         })
 
@@ -99,4 +97,15 @@ def verify_claim(claim, articles):
         reverse=True
     )
 
-    return verified_articles
+    # Tier 1: Strong semantic relevance (>= 15% cosine similarity)
+    high_relevance = [a for a in verified_articles if a["sim_raw"] >= 0.15]
+    if high_relevance:
+        return high_relevance
+
+    # Tier 2: Moderate relevance fallback (>= 8% similarity)
+    medium_relevance = [a for a in verified_articles if a["sim_raw"] >= 0.08]
+    if medium_relevance:
+        return medium_relevance
+
+    # Tier 3: If similarities are low across all articles, take top 3 candidates
+    return verified_articles[:3] if verified_articles else []
