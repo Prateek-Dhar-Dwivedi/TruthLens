@@ -4,6 +4,13 @@ import "./FactCheck.css";
 import api from "../api";
 import { API_URL } from "../config/config";
 import Swal from "sweetalert2";
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaMinusCircle,
+  FaBookmark,
+  FaExternalLinkAlt
+} from "react-icons/fa";
 
 function FactCheck() {
   const [claim, setClaim] = useState("");
@@ -122,7 +129,7 @@ function FactCheck() {
               className="save-btn"
               onClick={saveCheck}
             >
-              ⭐ Save Check
+              <FaBookmark style={{ marginRight: "6px" }} /> Save Check
             </button>
 
           )}
@@ -140,9 +147,15 @@ function FactCheck() {
             </div>
 
             <div className="stats">
-              <span>✅ Support: {result.supports}</span>
-              <span>❌ Contradict: {result.contradicts}</span>
-              <span>⚪ Neutral: {result.neutral}</span>
+              <span className="stat-item stat-support">
+                <FaCheckCircle className="stat-icon" /> Support: {result.supports}
+              </span>
+              <span className="stat-item stat-contradict">
+                <FaTimesCircle className="stat-icon" /> Contradict: {result.contradicts}
+              </span>
+              <span className="stat-item stat-neutral">
+                <FaMinusCircle className="stat-icon" /> Neutral: {result.neutral}
+              </span>
             </div>
 
             <h3>Evidence Sources</h3>
@@ -188,7 +201,7 @@ function FactCheck() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Read Source
+                  Read Source <FaExternalLinkAlt style={{ marginLeft: "4px", fontSize: "0.85em" }} />
                 </a>
 
               </div>

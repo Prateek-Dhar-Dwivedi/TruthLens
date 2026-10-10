@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api";
 import "./SavedChecks.css";
 import { Link } from "react-router-dom";
+import { FaLock } from "react-icons/fa";
 
 function SavedChecks() {
 
@@ -36,7 +37,10 @@ function SavedChecks() {
 
                 <div className="saved-login-card">
 
-                    <h1>🔒 Login Required</h1>
+                    <h1>
+                        <FaLock style={{ marginRight: "10px", color: "#F59E0B" }} />
+                        Login Required
+                    </h1>
 
                     <p>
                         Please login first to access your saved fact checks.

@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./Navbar.css";
 import { useTheme } from "../context/ThemeContext";
-import { FaSun, FaMoon } from "react-icons/fa";
+import { FaSun, FaMoon, FaUser } from "react-icons/fa";
 
 function Navbar() {
     const { darkMode, toggleTheme } = useTheme();
@@ -92,7 +92,7 @@ function Navbar() {
                                 )
                             }
                         >
-                            👤 Account
+                            <FaUser style={{ marginRight: "6px" }} /> Account
                         </button>
 
                         {showAccountMenu && (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api";
 import "./TrendingNews.css";
+import { FaFire, FaExternalLinkAlt } from "react-icons/fa";
 
 function TrendingNews() {
 
@@ -77,7 +78,10 @@ function TrendingNews() {
     return (
         <div className="trending-page">
 
-            <h1>🔥 Trending News</h1>
+            <h1>
+                <FaFire style={{ marginRight: "10px", color: "#F97316" }} />
+                Trending News
+            </h1>
 
             <p>
                 Latest headlines verified by TruthLens.
@@ -172,7 +176,7 @@ function TrendingNews() {
                                             target="_blank"
                                             rel="noreferrer"
                                         >
-                                            🔗 Read Source
+                                            <FaExternalLinkAlt style={{ marginRight: "6px", fontSize: "0.85em" }} /> Read Source
                                         </a>
 
                                     </div>

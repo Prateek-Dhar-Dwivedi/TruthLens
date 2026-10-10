@@ -3,6 +3,14 @@ import api from "../api";
 import "./UrlFactCheck.css";
 import { downloadReport } from "../utils/downloadReport";
 import Swal from "sweetalert2";
+import {
+    FaCheckCircle,
+    FaTimesCircle,
+    FaMinusCircle,
+    FaFilePdf,
+    FaShieldAlt,
+    FaExternalLinkAlt
+} from "react-icons/fa";
 
 function UrlFactCheck() {
 
@@ -118,16 +126,16 @@ function UrlFactCheck() {
 
                         <div className="stats">
 
-                            <div>
-                                Supports: {result.supports}
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                <FaCheckCircle style={{ color: "#10B981" }} /> Supports: {result.supports}
                             </div>
 
-                            <div>
-                                Contradicts: {result.contradicts}
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                <FaTimesCircle style={{ color: "#EF4444" }} /> Contradicts: {result.contradicts}
                             </div>
 
-                            <div>
-                                Neutral: {result.neutral}
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                <FaMinusCircle style={{ color: "#94A3B8" }} /> Neutral: {result.neutral}
                             </div>
 
                         </div>
@@ -145,7 +153,7 @@ function UrlFactCheck() {
                                 className="pdf-btn"
                                 onClick={() => downloadReport(result)}
                             >
-                                📄 Download PDF Report
+                                <FaFilePdf style={{ marginRight: "8px" }} /> Download PDF Report
                             </button>
 
                         </div>
@@ -193,7 +201,7 @@ function UrlFactCheck() {
                                                 .replace(" ", "-")
                                                 }`}
                                         >
-                                            ⭐ {item.credibility_label}
+                                            <FaShieldAlt style={{ marginRight: "6px" }} /> {item.credibility_label}
                                             ({item.credibility}/100)
                                         </div>
 
@@ -202,7 +210,7 @@ function UrlFactCheck() {
                                             target="_blank"
                                             rel="noreferrer"
                                         >
-                                            🔗 Read Source
+                                            <FaExternalLinkAlt style={{ marginRight: "6px", fontSize: "0.85em" }} /> Read Source
                                         </a>
 
                                     </div>
